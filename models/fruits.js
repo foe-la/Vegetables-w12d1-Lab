@@ -13,7 +13,18 @@ const fruits = [
         name:'banana',
         color: 'yellow',
         readyToEat: true
+    },
+    {
+        name: 'grapes',
+        color: 'purple',
+        readyToEat: true
+    },
+    {
+        name: 'oranges',
+        color: 'orange',
+        readyToEat: false
     }
+
 ];
 
 module.exports = fruits;
