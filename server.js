@@ -36,7 +36,7 @@ app.use((req, res, next) => {
 })
 
 // routes INDUCES
-// seed route
+// seed route fruits
 app.get('/fruits/seed', async (req, res)=>{
   try {
       await Fruit.create([
@@ -61,6 +61,36 @@ app.get('/fruits/seed', async (req, res)=>{
       console.error(error)
     }
 });
+// seed route veggies
+app.get('/veggies/seed', async (req, res)=>{
+  try {
+      await Veggie.create([
+        {
+                  name:'cabbage',
+                  color: 'green',
+                  readyToEat: false
+              },
+              {
+                  name:'kale',
+                  color: 'dark green',
+                  readyToEat: false
+              },
+              {
+                  name: 'corn',
+                  color: 'yellow',
+                  readyToEat: false
+              },
+              {
+                  name: 'cauliflower',
+                  color: 'white',
+                  readyToEat: true
+              }
+  ])
+      res.redirect('/veggies')
+  } catch (error) {
+      console.error(error)
+    }
+});
 // Index route - All the fruits
 app.get("/fruits/", async (req, res) => {
     // res.send(fruits);
@@ -73,9 +103,15 @@ app.get("/fruits/", async (req, res) => {
     }
   });
 
-app.get('/veggies/', (req, res)=> {
-    res.render('viewsVeggies/Index', {veggies: vegetables} )
-})
+app.get('/veggies/', async (req, res)=> {
+    // res.render('viewsVeggies/Index', {veggies: vegetables} )
+    try {
+      const veggies = await Veggie.find();
+      res.render("viewsVeggies/Index", {veggies: veggies});
+    } catch(error) {
+      console.error(error);
+    }
+});
 
 
 // New - get the form to add a new fruit
@@ -92,6 +128,15 @@ app.delete('/fruits/:id', async (req, res)=>{
     try {
         await Fruit.findByIdAndRemove(req.params.id)
         res.redirect('/fruits')//redirect back to fruits index
+    } catch(error) {
+        console.error(error);
+      }
+    })
+   
+app.delete('/veggies/:id', async (req, res)=>{
+    try {
+        await Veggie.findByIdAndRemove(req.params.id)
+        res.redirect('/veggies')//redirect back to veggies index
     } catch(error) {
         console.error(error);
       }
@@ -119,6 +164,25 @@ app.put("/fruits/:id",  async (req, res) => {
   }
 })
 
+app.put("/veggies/:id",  async (req, res) => {
+  try {
+    if (req.body.readyToEat === "on") {
+      //if checked, req.body.readyToEat is set to 'on'
+      req.body.readyToEat = true //do some data correction
+    } else {
+      //if not checked, req.body.readyToEat is undefined
+      req.body.readyToEat = false //do some data correction
+    }
+    // veggies.push(req.body);
+     await Veggie.findByIdAndUpdate(req.params.id, req.body)
+
+    res.redirect("/veggies")
+
+  } catch(error) {
+    console.log(error)
+  }
+})
+
 //Create - Add a new fruit to your fruits
 app.post("/fruits",  async (req, res) => {
     try {
@@ -139,15 +203,20 @@ app.post("/fruits",  async (req, res) => {
     }
   })
 
-app.post('/veggies', (req, res) => {
+app.post('/veggies', async (req, res) => {
+  try {
     if(req.body.readyToEat === 'on'){ //if checked, req.body.readyToEat is set to 'on'
         req.body.readyToEat = true //do some data correction
-    } else { //if not checked, req.body.readyToEat is undefined
-        req.body.readyToEat = false //do some data correction
+    } else { 
+      //if not checked, req.body.readyToEat is undefined
+      req.body.readyToEat = false //do some data correction
     }
-    vegetables.push(req.body)
+    await Veggies.create(req.body)
     // console.log(vegetables)
     res.redirect('/veggies') // send user back to main page
+  } catch(error) {
+    console.log(error)
+  }
 })
 //Edit
 
@@ -156,6 +225,16 @@ app.get('fruits/:id/edit', async (req, res)=>{
       const foundFruit = await Fruit.findById(req.params.id)
       res.render('fruits/Edit', 
       {fruit: foundFruit})
+  } catch(error) {
+      console.log(error)
+    }
+})
+
+app.get('veggies/:id/edit', async (req, res)=>{
+  try {
+      const foundVeggie = await Veggie.findById(req.params.id)
+      res.render('veggies/Edit', 
+      {veggie: foundVeggie})
   } catch(error) {
       console.log(error)
     }
@@ -174,10 +253,17 @@ app.get("/fruits/:id", async (req, res) => {
   })
   
 
-app.get('/veggies/:indexOfVegArray', (req, res) => {
-    res.render('viewVeggies/Show', {
-        veg: vegetables[req.params.indexOfVegArray]
-    }) // renders the info using the appropriate template
+app.get('/veggies/:id', async (req, res) => {
+
+  try {
+    const veggie = await Veggie.findById(req.params.id )
+
+    res.render('viewVeggies/Show', {veggie: Veggie})
+  }catch(error) {
+    console.log(error)
+  }
+    //     veg: vegetables[req.params.indexOfVegArray]
+    // }) // renders the info using the appropriate template
 })
 
 app.listen(3001, () => {
